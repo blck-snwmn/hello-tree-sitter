@@ -12,6 +12,7 @@ class TestClass {
     }
     
     // Private method
+    @SuppressWarnings("unused")
     private void privateMethod() {
         System.out.println("Private method");
     }
