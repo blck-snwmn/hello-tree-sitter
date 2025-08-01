@@ -1,4 +1,4 @@
-public class TestClass {
+class TestClass {
     private String name;
     
     // Constructor
