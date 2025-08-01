@@ -79,6 +79,40 @@ fn test_javascript_file_analysis() {
 }
 
 #[test]
+fn test_typescript_file_analysis() {
+    let binary = get_binary_path();
+    let output = Command::new(&binary)
+        .arg("tests/fixtures/test.ts")
+        .output()
+        .expect("Failed to execute command");
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    
+    assert!(output.status.success(), "Command failed with stderr: {}", stderr);
+    assert!(stdout.contains("Language: TypeScript"));
+    assert!(stdout.contains("Functions: 7"));
+    assert!(stdout.contains("Classes/Structs: 1"));
+}
+
+#[test]
+fn test_java_file_analysis() {
+    let binary = get_binary_path();
+    let output = Command::new(&binary)
+        .arg("tests/fixtures/test.java")
+        .output()
+        .expect("Failed to execute command");
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    
+    assert!(output.status.success(), "Command failed with stderr: {}", stderr);
+    assert!(stdout.contains("Language: Java"));
+    assert!(stdout.contains("Functions: 8"));
+    assert!(stdout.contains("Classes/Structs: 4"));
+}
+
+#[test]
 fn test_unsupported_file_type() {
     let binary = get_binary_path();
     let output = Command::new(&binary)
