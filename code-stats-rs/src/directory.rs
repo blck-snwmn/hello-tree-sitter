@@ -68,7 +68,7 @@ fn process_entry(
 
     // Read and analyze the file
     let source_code = fs::read_to_string(path)
-        .map_err(|e| CodeStatsError::IoError(format!("Failed to read {}: {}", path_str, e)))?;
+        .map_err(|e| CodeStatsError::IoError(format!("Failed to read {path_str}: {e}")))?;
 
     let mut parser = create_parser(&language)?;
     let code_stats = analyze_code(&mut parser, &source_code, &path_str, &language)?;
@@ -96,7 +96,7 @@ pub fn analyze_single_file(path: &Path) -> Result<FileStats> {
         .ok_or_else(|| CodeStatsError::UnsupportedFileType(path_str.to_string()))?;
 
     let source_code = fs::read_to_string(path)
-        .map_err(|e| CodeStatsError::IoError(format!("Failed to read {}: {}", path_str, e)))?;
+        .map_err(|e| CodeStatsError::IoError(format!("Failed to read {path_str}: {e}")))?;
 
     let mut parser = create_parser(&language)?;
     let code_stats = analyze_code(&mut parser, &source_code, &path_str, &language)?;

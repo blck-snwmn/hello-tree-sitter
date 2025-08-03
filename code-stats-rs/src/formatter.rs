@@ -28,7 +28,7 @@ fn format_summary(stats: &DirectoryStats) -> String {
     output.push_str("Language Summary:\n");
 
     let mut languages: Vec<_> = stats.total_by_language.iter().collect();
-    languages.sort_by_key(|(lang, _)| format!("{:?}", lang));
+    languages.sort_by_key(|(lang, _)| format!("{lang:?}"));
 
     for (language, lang_stats) in languages {
         output.push_str(&format!(
@@ -74,7 +74,7 @@ fn format_detail(stats: &DirectoryStats) -> String {
 
 fn format_json(stats: &DirectoryStats) -> String {
     serde_json::to_string_pretty(stats)
-        .unwrap_or_else(|e| format!("Error serializing to JSON: {}", e))
+        .unwrap_or_else(|e| format!("Error serializing to JSON: {e}"))
 }
 
 #[cfg(test)]
