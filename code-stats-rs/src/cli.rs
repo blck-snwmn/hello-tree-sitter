@@ -46,7 +46,7 @@ mod tests {
 
     #[test]
     fn test_cli_parse_basic() {
-        let cli = Cli::try_parse_from(&["code-stats-rs", "src/main.rs"]).unwrap();
+        let cli = Cli::try_parse_from(["code-stats-rs", "src/main.rs"]).unwrap();
 
         assert_eq!(cli.path, PathBuf::from("src/main.rs"));
         assert_eq!(cli.format, OutputFormat::Summary);
@@ -58,7 +58,7 @@ mod tests {
 
     #[test]
     fn test_cli_parse_with_format() {
-        let cli = Cli::try_parse_from(&["code-stats-rs", "src", "--format", "json"]).unwrap();
+        let cli = Cli::try_parse_from(["code-stats-rs", "src", "--format", "json"]).unwrap();
 
         assert_eq!(cli.path, PathBuf::from("src"));
         assert_eq!(cli.format, OutputFormat::Json);
@@ -66,14 +66,14 @@ mod tests {
 
     #[test]
     fn test_cli_parse_with_detail() {
-        let cli = Cli::try_parse_from(&["code-stats-rs", "src", "--detail"]).unwrap();
+        let cli = Cli::try_parse_from(["code-stats-rs", "src", "--detail"]).unwrap();
 
         assert!(cli.detail);
     }
 
     #[test]
     fn test_cli_parse_with_short_options() {
-        let cli = Cli::try_parse_from(&["code-stats-rs", "src", "-f", "detail", "-d"]).unwrap();
+        let cli = Cli::try_parse_from(["code-stats-rs", "src", "-f", "detail", "-d"]).unwrap();
 
         assert_eq!(cli.format, OutputFormat::Detail);
         assert!(cli.detail);
@@ -81,7 +81,7 @@ mod tests {
 
     #[test]
     fn test_cli_parse_with_ignore_patterns() {
-        let cli = Cli::try_parse_from(&[
+        let cli = Cli::try_parse_from([
             "code-stats-rs",
             "src",
             "--ignore",
@@ -96,21 +96,21 @@ mod tests {
 
     #[test]
     fn test_cli_parse_with_follow_links() {
-        let cli = Cli::try_parse_from(&["code-stats-rs", "src", "--follow-links"]).unwrap();
+        let cli = Cli::try_parse_from(["code-stats-rs", "src", "--follow-links"]).unwrap();
 
         assert!(cli.follow_links);
     }
 
     #[test]
     fn test_cli_parse_with_max_depth() {
-        let cli = Cli::try_parse_from(&["code-stats-rs", "src", "--max-depth", "5"]).unwrap();
+        let cli = Cli::try_parse_from(["code-stats-rs", "src", "--max-depth", "5"]).unwrap();
 
         assert_eq!(cli.max_depth, 5);
     }
 
     #[test]
     fn test_cli_parse_all_options() {
-        let cli = Cli::try_parse_from(&[
+        let cli = Cli::try_parse_from([
             "code-stats-rs",
             "/path/to/analyze",
             "--format",
@@ -136,19 +136,19 @@ mod tests {
 
     #[test]
     fn test_cli_parse_missing_path() {
-        let result = Cli::try_parse_from(&["code-stats-rs"]);
+        let result = Cli::try_parse_from(["code-stats-rs"]);
         assert!(result.is_err());
     }
 
     #[test]
     fn test_cli_parse_invalid_format() {
-        let result = Cli::try_parse_from(&["code-stats-rs", "src", "--format", "invalid"]);
+        let result = Cli::try_parse_from(["code-stats-rs", "src", "--format", "invalid"]);
         assert!(result.is_err());
     }
 
     #[test]
     fn test_cli_parse_invalid_max_depth() {
-        let result = Cli::try_parse_from(&["code-stats-rs", "src", "--max-depth", "not-a-number"]);
+        let result = Cli::try_parse_from(["code-stats-rs", "src", "--max-depth", "not-a-number"]);
         assert!(result.is_err());
     }
 
@@ -217,7 +217,7 @@ mod tests {
     #[test]
     fn test_cli_help_flag() {
         // Test that help flag is properly handled
-        let result = Cli::try_parse_from(&["code-stats-rs", "--help"]);
+        let result = Cli::try_parse_from(["code-stats-rs", "--help"]);
         assert!(result.is_err());
 
         let err = result.unwrap_err();
@@ -227,7 +227,7 @@ mod tests {
     #[test]
     fn test_cli_version_flag() {
         // Test that version flag is properly handled
-        let result = Cli::try_parse_from(&["code-stats-rs", "--version"]);
+        let result = Cli::try_parse_from(["code-stats-rs", "--version"]);
         // In clap v4, version is disabled by default unless explicitly added
         // So this will result in UnknownArgument error
         assert!(result.is_err());
