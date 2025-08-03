@@ -1,7 +1,7 @@
 use std::path::Path;
 use tree_sitter::Language;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum SupportedLanguage {
     Rust,
     Go,

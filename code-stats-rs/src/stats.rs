@@ -38,7 +38,7 @@ impl DirectoryStats {
         // Update language-specific stats
         let lang_stats = self
             .total_by_language
-            .entry(file_stats.language.clone())
+            .entry(file_stats.language)
             .or_default();
 
         lang_stats.file_count += 1;

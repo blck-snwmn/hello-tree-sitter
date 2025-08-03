@@ -1,3 +1,4 @@
+pub mod analyzer;
 pub mod cli;
 pub mod directory;
 pub mod error;
