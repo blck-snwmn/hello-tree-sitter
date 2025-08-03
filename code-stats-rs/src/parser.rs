@@ -2,7 +2,7 @@ use tree_sitter::{Parser, Node};
 use crate::language::SupportedLanguage;
 use crate::error::{CodeStatsError, Result};
 
-#[derive(Default)]
+#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct CodeStats {
     pub function_count: usize,
     pub class_struct_count: usize,
