@@ -254,7 +254,7 @@ fn test_directory_with_errors() {
 
     // Create a file with invalid UTF-8 (simulate corrupted file)
     let invalid_file = root.join("invalid.rs");
-    fs::write(&invalid_file, &[0xFF, 0xFE, 0xFF, 0xFF]).unwrap();
+    fs::write(&invalid_file, [0xFF, 0xFE, 0xFF, 0xFF]).unwrap();
 
     let output = run_code_stats(&[root.to_str().unwrap()]);
     let stdout = String::from_utf8_lossy(&output.stdout);
