@@ -13,11 +13,8 @@ pub enum SupportedLanguage {
 
 impl SupportedLanguage {
     pub fn from_file_extension(file_path: &str) -> Option<Self> {
-        let extension = Path::new(file_path)
-            .extension()?
-            .to_str()?
-            .to_lowercase();
-        
+        let extension = Path::new(file_path).extension()?.to_str()?.to_lowercase();
+
         match extension.as_str() {
             "rs" => Some(Self::Rust),
             "go" => Some(Self::Go),
@@ -28,7 +25,7 @@ impl SupportedLanguage {
             _ => None,
         }
     }
-    
+
     pub fn get_language(&self) -> Language {
         match self {
             Self::Rust => tree_sitter_rust::LANGUAGE.into(),
@@ -47,26 +44,62 @@ mod tests {
 
     #[test]
     fn test_from_file_extension_supported_languages() {
-        assert!(matches!(SupportedLanguage::from_file_extension("main.rs"), Some(SupportedLanguage::Rust)));
-        assert!(matches!(SupportedLanguage::from_file_extension("main.go"), Some(SupportedLanguage::Go)));
-        assert!(matches!(SupportedLanguage::from_file_extension("main.py"), Some(SupportedLanguage::Python)));
-        assert!(matches!(SupportedLanguage::from_file_extension("main.js"), Some(SupportedLanguage::JavaScript)));
-        assert!(matches!(SupportedLanguage::from_file_extension("main.ts"), Some(SupportedLanguage::TypeScript)));
-        assert!(matches!(SupportedLanguage::from_file_extension("Main.java"), Some(SupportedLanguage::Java)));
+        assert!(matches!(
+            SupportedLanguage::from_file_extension("main.rs"),
+            Some(SupportedLanguage::Rust)
+        ));
+        assert!(matches!(
+            SupportedLanguage::from_file_extension("main.go"),
+            Some(SupportedLanguage::Go)
+        ));
+        assert!(matches!(
+            SupportedLanguage::from_file_extension("main.py"),
+            Some(SupportedLanguage::Python)
+        ));
+        assert!(matches!(
+            SupportedLanguage::from_file_extension("main.js"),
+            Some(SupportedLanguage::JavaScript)
+        ));
+        assert!(matches!(
+            SupportedLanguage::from_file_extension("main.ts"),
+            Some(SupportedLanguage::TypeScript)
+        ));
+        assert!(matches!(
+            SupportedLanguage::from_file_extension("Main.java"),
+            Some(SupportedLanguage::Java)
+        ));
     }
 
     #[test]
     fn test_from_file_extension_case_insensitive() {
-        assert!(matches!(SupportedLanguage::from_file_extension("MAIN.RS"), Some(SupportedLanguage::Rust)));
-        assert!(matches!(SupportedLanguage::from_file_extension("Main.Go"), Some(SupportedLanguage::Go)));
-        assert!(matches!(SupportedLanguage::from_file_extension("script.PY"), Some(SupportedLanguage::Python)));
+        assert!(matches!(
+            SupportedLanguage::from_file_extension("MAIN.RS"),
+            Some(SupportedLanguage::Rust)
+        ));
+        assert!(matches!(
+            SupportedLanguage::from_file_extension("Main.Go"),
+            Some(SupportedLanguage::Go)
+        ));
+        assert!(matches!(
+            SupportedLanguage::from_file_extension("script.PY"),
+            Some(SupportedLanguage::Python)
+        ));
     }
 
     #[test]
     fn test_from_file_extension_with_path() {
-        assert!(matches!(SupportedLanguage::from_file_extension("src/main.rs"), Some(SupportedLanguage::Rust)));
-        assert!(matches!(SupportedLanguage::from_file_extension("/usr/local/bin/script.py"), Some(SupportedLanguage::Python)));
-        assert!(matches!(SupportedLanguage::from_file_extension("./test/index.js"), Some(SupportedLanguage::JavaScript)));
+        assert!(matches!(
+            SupportedLanguage::from_file_extension("src/main.rs"),
+            Some(SupportedLanguage::Rust)
+        ));
+        assert!(matches!(
+            SupportedLanguage::from_file_extension("/usr/local/bin/script.py"),
+            Some(SupportedLanguage::Python)
+        ));
+        assert!(matches!(
+            SupportedLanguage::from_file_extension("./test/index.js"),
+            Some(SupportedLanguage::JavaScript)
+        ));
     }
 
     #[test]
@@ -85,9 +118,18 @@ mod tests {
 
     #[test]
     fn test_from_file_extension_multiple_dots() {
-        assert!(matches!(SupportedLanguage::from_file_extension("test.spec.js"), Some(SupportedLanguage::JavaScript)));
-        assert!(matches!(SupportedLanguage::from_file_extension("app.module.ts"), Some(SupportedLanguage::TypeScript)));
-        assert!(matches!(SupportedLanguage::from_file_extension("Main.test.java"), Some(SupportedLanguage::Java)));
+        assert!(matches!(
+            SupportedLanguage::from_file_extension("test.spec.js"),
+            Some(SupportedLanguage::JavaScript)
+        ));
+        assert!(matches!(
+            SupportedLanguage::from_file_extension("app.module.ts"),
+            Some(SupportedLanguage::TypeScript)
+        ));
+        assert!(matches!(
+            SupportedLanguage::from_file_extension("Main.test.java"),
+            Some(SupportedLanguage::Java)
+        ));
     }
 
     #[test]

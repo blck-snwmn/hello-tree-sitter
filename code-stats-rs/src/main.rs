@@ -5,7 +5,7 @@ use code_stats_rs::formatter::{format_output, format_single_file};
 
 fn main() {
     let cli = Cli::parse();
-    
+
     let result = if cli.path.is_file() {
         // Single file analysis
         match analyze_single_file(&cli.path) {
@@ -25,17 +25,20 @@ fn main() {
                 } else {
                     cli.format
                 };
-                
+
                 println!("{}", format_output(&stats, format, cli.detail));
                 Ok(())
             }
             Err(e) => Err(e),
         }
     } else {
-        eprintln!("Error: {} is neither a file nor a directory", cli.path.display());
+        eprintln!(
+            "Error: {} is neither a file nor a directory",
+            cli.path.display()
+        );
         std::process::exit(1);
     };
-    
+
     if let Err(e) = result {
         eprintln!("Error: {}", e);
         std::process::exit(1);

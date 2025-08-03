@@ -10,7 +10,7 @@ fn get_fixtures_path() -> PathBuf {
 fn test_rust_file_analysis() {
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     let fixture = get_fixtures_path().join("test.rs");
-    
+
     cmd.arg(fixture)
         .assert()
         .success()
@@ -23,7 +23,7 @@ fn test_rust_file_analysis() {
 fn test_python_file_analysis() {
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     let fixture = get_fixtures_path().join("test.py");
-    
+
     cmd.arg(fixture)
         .assert()
         .success()
@@ -36,7 +36,7 @@ fn test_python_file_analysis() {
 fn test_go_file_analysis() {
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     let fixture = get_fixtures_path().join("test.go");
-    
+
     cmd.arg(fixture)
         .assert()
         .success()
@@ -49,7 +49,7 @@ fn test_go_file_analysis() {
 fn test_javascript_file_analysis() {
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     let fixture = get_fixtures_path().join("test.js");
-    
+
     cmd.arg(fixture)
         .assert()
         .success()
@@ -62,7 +62,7 @@ fn test_javascript_file_analysis() {
 fn test_typescript_file_analysis() {
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     let fixture = get_fixtures_path().join("test.ts");
-    
+
     cmd.arg(fixture)
         .assert()
         .success()
@@ -75,7 +75,7 @@ fn test_typescript_file_analysis() {
 fn test_java_file_analysis() {
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     let fixture = get_fixtures_path().join("test.java");
-    
+
     cmd.arg(fixture)
         .assert()
         .success()
@@ -89,7 +89,7 @@ fn test_unsupported_file_type() {
     let temp_dir = tempfile::TempDir::new().unwrap();
     let unsupported_file = temp_dir.path().join("unsupported.txt");
     std::fs::write(&unsupported_file, "This is not a code file").unwrap();
-    
+
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     cmd.arg(unsupported_file)
         .assert()
@@ -111,7 +111,7 @@ fn test_empty_file() {
     let temp_dir = tempfile::TempDir::new().unwrap();
     let empty_file = temp_dir.path().join("empty.rs");
     std::fs::write(&empty_file, "").unwrap();
-    
+
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     cmd.arg(empty_file)
         .assert()
@@ -125,7 +125,7 @@ fn test_file_with_syntax_errors() {
     let temp_dir = tempfile::TempDir::new().unwrap();
     let invalid_file = temp_dir.path().join("invalid.rs");
     std::fs::write(&invalid_file, "fn test( { // syntax error").unwrap();
-    
+
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     cmd.arg(invalid_file)
         .assert()
@@ -149,8 +149,9 @@ struct 構造体 {
     フィールド: String,
 }
 "#,
-    ).unwrap();
-    
+    )
+    .unwrap();
+
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     cmd.arg(unicode_file)
         .assert()
@@ -163,14 +164,14 @@ struct 構造体 {
 fn test_large_file() {
     let temp_dir = tempfile::TempDir::new().unwrap();
     let large_file = temp_dir.path().join("large.rs");
-    
+
     // Generate a large file with many functions
     let mut content = String::new();
     for i in 0..1000 {
         content.push_str(&format!("fn function_{}() {{}}\n", i));
     }
     std::fs::write(&large_file, content).unwrap();
-    
+
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     cmd.arg(large_file)
         .assert()

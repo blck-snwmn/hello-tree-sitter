@@ -47,7 +47,7 @@ mod tests {
     #[test]
     fn test_cli_parse_basic() {
         let cli = Cli::try_parse_from(&["code-stats-rs", "src/main.rs"]).unwrap();
-        
+
         assert_eq!(cli.path, PathBuf::from("src/main.rs"));
         assert_eq!(cli.format, OutputFormat::Summary);
         assert!(!cli.detail);
@@ -59,7 +59,7 @@ mod tests {
     #[test]
     fn test_cli_parse_with_format() {
         let cli = Cli::try_parse_from(&["code-stats-rs", "src", "--format", "json"]).unwrap();
-        
+
         assert_eq!(cli.path, PathBuf::from("src"));
         assert_eq!(cli.format, OutputFormat::Json);
     }
@@ -67,14 +67,14 @@ mod tests {
     #[test]
     fn test_cli_parse_with_detail() {
         let cli = Cli::try_parse_from(&["code-stats-rs", "src", "--detail"]).unwrap();
-        
+
         assert!(cli.detail);
     }
 
     #[test]
     fn test_cli_parse_with_short_options() {
         let cli = Cli::try_parse_from(&["code-stats-rs", "src", "-f", "detail", "-d"]).unwrap();
-        
+
         assert_eq!(cli.format, OutputFormat::Detail);
         assert!(cli.detail);
     }
@@ -88,22 +88,23 @@ mod tests {
             "target",
             "--ignore",
             ".git",
-        ]).unwrap();
-        
+        ])
+        .unwrap();
+
         assert_eq!(cli.ignore, vec!["target", ".git"]);
     }
 
     #[test]
     fn test_cli_parse_with_follow_links() {
         let cli = Cli::try_parse_from(&["code-stats-rs", "src", "--follow-links"]).unwrap();
-        
+
         assert!(cli.follow_links);
     }
 
     #[test]
     fn test_cli_parse_with_max_depth() {
         let cli = Cli::try_parse_from(&["code-stats-rs", "src", "--max-depth", "5"]).unwrap();
-        
+
         assert_eq!(cli.max_depth, 5);
     }
 
@@ -122,8 +123,9 @@ mod tests {
             "--follow-links",
             "--max-depth",
             "3",
-        ]).unwrap();
-        
+        ])
+        .unwrap();
+
         assert_eq!(cli.path, PathBuf::from("/path/to/analyze"));
         assert_eq!(cli.format, OutputFormat::Json);
         assert!(cli.detail);
@@ -153,14 +155,32 @@ mod tests {
     #[test]
     fn test_output_format_enum() {
         // Test ValueEnum derive
-        assert_eq!(OutputFormat::from_str("summary", true).unwrap(), OutputFormat::Summary);
-        assert_eq!(OutputFormat::from_str("detail", true).unwrap(), OutputFormat::Detail);
-        assert_eq!(OutputFormat::from_str("json", true).unwrap(), OutputFormat::Json);
-        
+        assert_eq!(
+            OutputFormat::from_str("summary", true).unwrap(),
+            OutputFormat::Summary
+        );
+        assert_eq!(
+            OutputFormat::from_str("detail", true).unwrap(),
+            OutputFormat::Detail
+        );
+        assert_eq!(
+            OutputFormat::from_str("json", true).unwrap(),
+            OutputFormat::Json
+        );
+
         // Test case insensitive
-        assert_eq!(OutputFormat::from_str("SUMMARY", true).unwrap(), OutputFormat::Summary);
-        assert_eq!(OutputFormat::from_str("Detail", true).unwrap(), OutputFormat::Detail);
-        assert_eq!(OutputFormat::from_str("JSON", true).unwrap(), OutputFormat::Json);
+        assert_eq!(
+            OutputFormat::from_str("SUMMARY", true).unwrap(),
+            OutputFormat::Summary
+        );
+        assert_eq!(
+            OutputFormat::from_str("Detail", true).unwrap(),
+            OutputFormat::Detail
+        );
+        assert_eq!(
+            OutputFormat::from_str("JSON", true).unwrap(),
+            OutputFormat::Json
+        );
     }
 
     #[test]
@@ -173,16 +193,24 @@ mod tests {
     #[test]
     fn test_cli_command_metadata() {
         let cmd = Cli::command();
-        
+
         assert_eq!(cmd.get_name(), "code-stats-rs");
-        assert!(cmd.get_about().unwrap().to_string().contains("Analyze code statistics"));
-        
+        assert!(
+            cmd.get_about()
+                .unwrap()
+                .to_string()
+                .contains("Analyze code statistics")
+        );
+
         // Check that all expected arguments exist
         assert!(cmd.get_arguments().any(|arg| arg.get_id() == "path"));
         assert!(cmd.get_arguments().any(|arg| arg.get_id() == "format"));
         assert!(cmd.get_arguments().any(|arg| arg.get_id() == "detail"));
         assert!(cmd.get_arguments().any(|arg| arg.get_id() == "ignore"));
-        assert!(cmd.get_arguments().any(|arg| arg.get_id() == "follow_links"));
+        assert!(
+            cmd.get_arguments()
+                .any(|arg| arg.get_id() == "follow_links")
+        );
         assert!(cmd.get_arguments().any(|arg| arg.get_id() == "max_depth"));
     }
 
@@ -191,7 +219,7 @@ mod tests {
         // Test that help flag is properly handled
         let result = Cli::try_parse_from(&["code-stats-rs", "--help"]);
         assert!(result.is_err());
-        
+
         let err = result.unwrap_err();
         assert_eq!(err.kind(), clap::error::ErrorKind::DisplayHelp);
     }
@@ -203,7 +231,7 @@ mod tests {
         // In clap v4, version is disabled by default unless explicitly added
         // So this will result in UnknownArgument error
         assert!(result.is_err());
-        
+
         let err = result.unwrap_err();
         assert_eq!(err.kind(), clap::error::ErrorKind::UnknownArgument);
     }

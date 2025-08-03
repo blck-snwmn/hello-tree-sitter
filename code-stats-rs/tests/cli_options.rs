@@ -41,7 +41,7 @@ fn test_missing_path_argument() {
 #[test]
 fn test_invalid_format_option() {
     let temp_dir = tempfile::TempDir::new().unwrap();
-    
+
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     cmd.arg(temp_dir.path())
         .arg("--format")
@@ -54,7 +54,7 @@ fn test_invalid_format_option() {
 #[test]
 fn test_multiple_ignore_patterns() {
     let (_temp_dir, project_root) = create_test_project();
-    
+
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     cmd.arg(project_root)
         .arg("--ignore")
@@ -70,7 +70,7 @@ fn test_multiple_ignore_patterns() {
 #[test]
 fn test_max_depth_validation() {
     let temp_dir = tempfile::TempDir::new().unwrap();
-    
+
     // Valid max-depth
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     cmd.arg(temp_dir.path())
@@ -78,7 +78,7 @@ fn test_max_depth_validation() {
         .arg("5")
         .assert()
         .success();
-    
+
     // Invalid max-depth (not a number)
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     cmd.arg(temp_dir.path())
@@ -92,7 +92,7 @@ fn test_max_depth_validation() {
 #[test]
 fn test_conflicting_format_options() {
     let temp_dir = tempfile::TempDir::new().unwrap();
-    
+
     // --detail should override --format summary
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     cmd.arg(temp_dir.path())
@@ -108,12 +108,9 @@ fn test_path_with_spaces() {
     let temp_dir = tempfile::TempDir::new().unwrap();
     let dir_with_spaces = temp_dir.path().join("dir with spaces");
     std::fs::create_dir(&dir_with_spaces).unwrap();
-    
-    create_test_file(
-        &dir_with_spaces.join("test.rs"),
-        "fn test() {}",
-    );
-    
+
+    create_test_file(&dir_with_spaces.join("test.rs"), "fn test() {}");
+
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     cmd.arg(&dir_with_spaces)
         .assert()
@@ -126,7 +123,7 @@ fn test_relative_path() {
     let temp_dir = tempfile::TempDir::new().unwrap();
     let test_file = temp_dir.path().join("test.rs");
     create_test_file(&test_file, "fn test() {}");
-    
+
     // Change to temp directory and use relative path
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     cmd.current_dir(temp_dir.path())
@@ -141,7 +138,7 @@ fn test_absolute_path() {
     let temp_dir = tempfile::TempDir::new().unwrap();
     let test_file = temp_dir.path().join("test.rs");
     create_test_file(&test_file, "fn test() {}");
-    
+
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     cmd.arg(test_file.to_str().unwrap())
         .assert()
@@ -163,7 +160,7 @@ fn test_file_vs_directory_detection() {
     let temp_dir = tempfile::TempDir::new().unwrap();
     let test_file = temp_dir.path().join("single.rs");
     create_test_file(&test_file, "fn test() {}");
-    
+
     // Test file - should show single file format
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     cmd.arg(&test_file)
@@ -171,7 +168,7 @@ fn test_file_vs_directory_detection() {
         .success()
         .stdout(predicate::str::contains("Analyzing file:"))
         .stdout(predicate::str::contains("Code Statistics:"));
-    
+
     // Test directory - should show summary format
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     cmd.arg(temp_dir.path())
@@ -194,7 +191,7 @@ fn test_stdin_not_supported() {
 #[test]
 fn test_all_options_combined() {
     let (_temp_dir, project_root) = create_test_project();
-    
+
     let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
     cmd.arg(project_root)
         .arg("--format")

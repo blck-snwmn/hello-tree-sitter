@@ -4,16 +4,16 @@ use thiserror::Error;
 pub enum CodeStatsError {
     #[error("Failed to parse file: {0}")]
     ParseError(String),
-    
+
     #[error("Unsupported language for file: {0}")]
     UnsupportedLanguage(String),
-    
+
     #[error("Failed to set language grammar")]
     LanguageSetupError,
-    
+
     #[error("Unsupported file type: {0}")]
     UnsupportedFileType(String),
-    
+
     #[error("IO error: {0}")]
     IoError(String),
 }

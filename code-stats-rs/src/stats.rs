@@ -1,8 +1,8 @@
-use std::collections::HashMap;
-use std::path::PathBuf;
-use serde::{Serialize, Deserialize};
 use crate::language::SupportedLanguage;
 use crate::parser::CodeStats;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileStats {
@@ -36,10 +36,11 @@ impl DirectoryStats {
         self.total_stats.class_struct_count += file_stats.stats.class_struct_count;
 
         // Update language-specific stats
-        let lang_stats = self.total_by_language
+        let lang_stats = self
+            .total_by_language
             .entry(file_stats.language.clone())
-            .or_insert_with(LanguageStats::default);
-        
+            .or_default();
+
         lang_stats.file_count += 1;
         lang_stats.function_count += file_stats.stats.function_count;
         lang_stats.class_struct_count += file_stats.stats.class_struct_count;
@@ -78,7 +79,7 @@ mod tests {
     #[test]
     fn test_directory_stats_new() {
         let dir_stats = DirectoryStats::new();
-        
+
         assert_eq!(dir_stats.files.len(), 0);
         assert_eq!(dir_stats.total_stats.function_count, 0);
         assert_eq!(dir_stats.total_stats.class_struct_count, 0);
@@ -89,7 +90,7 @@ mod tests {
     #[test]
     fn test_directory_stats_add_single_file() {
         let mut dir_stats = DirectoryStats::new();
-        
+
         let file_stats = FileStats {
             path: PathBuf::from("test.rs"),
             language: SupportedLanguage::Rust,
@@ -98,13 +99,13 @@ mod tests {
                 class_struct_count: 1,
             },
         };
-        
+
         dir_stats.add_file(file_stats);
-        
+
         assert_eq!(dir_stats.total_files(), 1);
         assert_eq!(dir_stats.total_stats.function_count, 3);
         assert_eq!(dir_stats.total_stats.class_struct_count, 1);
-        
+
         let rust_stats = &dir_stats.total_by_language[&SupportedLanguage::Rust];
         assert_eq!(rust_stats.file_count, 1);
         assert_eq!(rust_stats.function_count, 3);
@@ -114,7 +115,7 @@ mod tests {
     #[test]
     fn test_directory_stats_add_multiple_files_same_language() {
         let mut dir_stats = DirectoryStats::new();
-        
+
         // Add first Rust file
         dir_stats.add_file(FileStats {
             path: PathBuf::from("file1.rs"),
@@ -124,7 +125,7 @@ mod tests {
                 class_struct_count: 1,
             },
         });
-        
+
         // Add second Rust file
         dir_stats.add_file(FileStats {
             path: PathBuf::from("file2.rs"),
@@ -134,11 +135,11 @@ mod tests {
                 class_struct_count: 2,
             },
         });
-        
+
         assert_eq!(dir_stats.total_files(), 2);
         assert_eq!(dir_stats.total_stats.function_count, 5);
         assert_eq!(dir_stats.total_stats.class_struct_count, 3);
-        
+
         let rust_stats = &dir_stats.total_by_language[&SupportedLanguage::Rust];
         assert_eq!(rust_stats.file_count, 2);
         assert_eq!(rust_stats.function_count, 5);
@@ -148,7 +149,7 @@ mod tests {
     #[test]
     fn test_directory_stats_add_multiple_languages() {
         let mut dir_stats = DirectoryStats::new();
-        
+
         // Add Rust file
         dir_stats.add_file(FileStats {
             path: PathBuf::from("main.rs"),
@@ -158,7 +159,7 @@ mod tests {
                 class_struct_count: 2,
             },
         });
-        
+
         // Add Python file
         dir_stats.add_file(FileStats {
             path: PathBuf::from("script.py"),
@@ -168,7 +169,7 @@ mod tests {
                 class_struct_count: 1,
             },
         });
-        
+
         // Add Go file
         dir_stats.add_file(FileStats {
             path: PathBuf::from("main.go"),
@@ -178,21 +179,21 @@ mod tests {
                 class_struct_count: 1,
             },
         });
-        
+
         assert_eq!(dir_stats.total_files(), 3);
         assert_eq!(dir_stats.total_stats.function_count, 9);
         assert_eq!(dir_stats.total_stats.class_struct_count, 4);
         assert_eq!(dir_stats.total_by_language.len(), 3);
-        
+
         // Check individual language stats
         let rust_stats = &dir_stats.total_by_language[&SupportedLanguage::Rust];
         assert_eq!(rust_stats.file_count, 1);
         assert_eq!(rust_stats.function_count, 4);
-        
+
         let python_stats = &dir_stats.total_by_language[&SupportedLanguage::Python];
         assert_eq!(python_stats.file_count, 1);
         assert_eq!(python_stats.function_count, 3);
-        
+
         let go_stats = &dir_stats.total_by_language[&SupportedLanguage::Go];
         assert_eq!(go_stats.file_count, 1);
         assert_eq!(go_stats.function_count, 2);
@@ -201,7 +202,7 @@ mod tests {
     #[test]
     fn test_language_stats_default() {
         let lang_stats = LanguageStats::default();
-        
+
         assert_eq!(lang_stats.file_count, 0);
         assert_eq!(lang_stats.function_count, 0);
         assert_eq!(lang_stats.class_struct_count, 0);
@@ -217,16 +218,22 @@ mod tests {
                 class_struct_count: 5,
             },
         };
-        
+
         // Serialize to JSON
         let json = serde_json::to_string(&file_stats).unwrap();
-        
+
         // Deserialize back
         let deserialized: FileStats = serde_json::from_str(&json).unwrap();
-        
+
         assert_eq!(deserialized.path, file_stats.path);
         assert_eq!(deserialized.language, file_stats.language);
-        assert_eq!(deserialized.stats.function_count, file_stats.stats.function_count);
-        assert_eq!(deserialized.stats.class_struct_count, file_stats.stats.class_struct_count);
+        assert_eq!(
+            deserialized.stats.function_count,
+            file_stats.stats.function_count
+        );
+        assert_eq!(
+            deserialized.stats.class_struct_count,
+            file_stats.stats.class_struct_count
+        );
     }
 }

@@ -8,4 +8,4 @@ pub mod stats;
 
 pub use error::{CodeStatsError, Result};
 pub use language::SupportedLanguage;
-pub use parser::{analyze_code, create_parser, CodeStats};
+pub use parser::{CodeStats, analyze_code, create_parser};

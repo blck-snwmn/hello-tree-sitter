@@ -300,7 +300,9 @@ class ClassOne:
 /// Helper to run the code-stats-rs binary with args
 pub fn run_code_stats(args: &[&str]) -> std::process::Output {
     let mut cmd = std::process::Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
-    cmd.args(args).output().expect("Failed to run code-stats-rs")
+    cmd.args(args)
+        .output()
+        .expect("Failed to run code-stats-rs")
 }
 
 /// Assert that a string contains all of the given substrings
