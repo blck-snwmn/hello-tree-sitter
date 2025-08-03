@@ -247,13 +247,11 @@ struct TestStruct {
 
         // Try to process a directory entry
         let walker = WalkDir::new(temp_dir.path());
-        for entry in walker {
-            if let Ok(entry) = entry {
-                if entry.path() == sub_dir {
-                    let result = process_entry(&entry, &mut stats, &[]);
-                    assert!(result.is_ok());
-                    break;
-                }
+        for entry in walker.into_iter().flatten() {
+            if entry.path() == sub_dir {
+                let result = process_entry(&entry, &mut stats, &[]);
+                assert!(result.is_ok());
+                break;
             }
         }
 
@@ -277,28 +275,26 @@ struct TestStruct {
         let mut stats = DirectoryStats::new();
 
         let walker = WalkDir::new(temp_dir.path());
-        for entry in walker {
-            if let Ok(entry) = entry {
-                if entry.path() == file_path {
-                    let result = process_entry(&entry, &mut stats, &[]);
+        for entry in walker.into_iter().flatten() {
+            if entry.path() == file_path {
+                let result = process_entry(&entry, &mut stats, &[]);
 
-                    #[cfg(unix)]
-                    {
-                        assert!(result.is_err());
-                        match result.unwrap_err() {
-                            CodeStatsError::IoError(msg) => assert!(msg.contains("Failed to read")),
-                            _ => panic!("Expected IoError"),
-                        }
+                #[cfg(unix)]
+                {
+                    assert!(result.is_err());
+                    match result.unwrap_err() {
+                        CodeStatsError::IoError(msg) => assert!(msg.contains("Failed to read")),
+                        _ => panic!("Expected IoError"),
                     }
-
-                    #[cfg(not(unix))]
-                    {
-                        // On non-Unix systems, just verify the function doesn't panic
-                        let _ = result;
-                    }
-
-                    break;
                 }
+
+                #[cfg(not(unix))]
+                {
+                    // On non-Unix systems, just verify the function doesn't panic
+                    let _ = result;
+                }
+
+                break;
             }
         }
 
