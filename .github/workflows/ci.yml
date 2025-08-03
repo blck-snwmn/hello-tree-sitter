@@ -1,0 +1,32 @@
+name: CI
+
+on: push
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Rust components
+      run: rustup component add rustfmt clippy
+    
+    - name: Format check
+      run: cargo fmt -- --check
+      working-directory: code-stats-rs
+    
+    - name: Clippy
+      run: cargo clippy -- -D warnings
+      working-directory: code-stats-rs
+    
+    - name: Test
+      run: cargo test
+      working-directory: code-stats-rs
+    
+    - name: Build
+      run: cargo build --release
+      working-directory: code-stats-rs
