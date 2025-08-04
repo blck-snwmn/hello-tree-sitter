@@ -1,10 +1,7 @@
-use crate::error::{CodeStatsError, Result};
-use crate::language::SupportedLanguage;
-use crate::parser::{analyze_code, create_parser};
+use crate::analyzer::CodeAnalyzer;
+use crate::error::Result;
 use crate::stats::{DirectoryStats, FileStats};
-use std::fs;
 use std::path::Path;
-use walkdir::{DirEntry, WalkDir};
 
 pub fn analyze_directory(
     path: &Path,
@@ -12,105 +9,20 @@ pub fn analyze_directory(
     follow_links: bool,
     ignore_patterns: &[String],
 ) -> Result<DirectoryStats> {
-    let mut stats = DirectoryStats::new();
-    let mut errors = Vec::new();
-
-    let walker = WalkDir::new(path)
-        .max_depth(max_depth)
-        .follow_links(follow_links);
-
-    for entry in walker {
-        match entry {
-            Ok(dir_entry) => {
-                if let Err(e) = process_entry(&dir_entry, &mut stats, ignore_patterns) {
-                    errors.push(e);
-                }
-            }
-            Err(e) => {
-                errors.push(CodeStatsError::IoError(e.to_string()));
-            }
-        }
-    }
-
-    if stats.total_files() == 0 && !errors.is_empty() {
-        // If no files were successfully processed and we have errors, return the first error
-        return Err(errors.into_iter().next().unwrap());
-    }
-
-    Ok(stats)
-}
-
-fn process_entry(
-    entry: &DirEntry,
-    stats: &mut DirectoryStats,
-    ignore_patterns: &[String],
-) -> Result<()> {
-    let path = entry.path();
-
-    // Skip if not a file
-    if !path.is_file() {
-        return Ok(());
-    }
-
-    // Check if path matches any ignore pattern
-    let path_str = path.to_string_lossy();
-    for pattern in ignore_patterns {
-        if path_str.contains(pattern) {
-            return Ok(());
-        }
-    }
-
-    // Check if it's a supported language
-    let language = match SupportedLanguage::from_file_extension(&path_str) {
-        Some(lang) => lang,
-        None => return Ok(()), // Skip unsupported files silently
-    };
-
-    // Read and analyze the file
-    let source_code = fs::read_to_string(path)
-        .map_err(|e| CodeStatsError::IoError(format!("Failed to read {path_str}: {e}")))?;
-
-    let mut parser = create_parser(&language)?;
-    let code_stats = analyze_code(&mut parser, &source_code, &path_str, &language)?;
-
-    let file_stats = FileStats {
-        path: path.to_path_buf(),
-        language,
-        stats: code_stats,
-    };
-
-    stats.add_file(file_stats);
-    Ok(())
+    let mut analyzer = CodeAnalyzer::new();
+    analyzer.analyze_directory(path, max_depth, follow_links, ignore_patterns)
 }
 
 pub fn analyze_single_file(path: &Path) -> Result<FileStats> {
-    if !path.is_file() {
-        return Err(CodeStatsError::IoError(format!(
-            "{} is not a file",
-            path.display()
-        )));
-    }
-
-    let path_str = path.to_string_lossy();
-    let language = SupportedLanguage::from_file_extension(&path_str)
-        .ok_or_else(|| CodeStatsError::UnsupportedFileType(path_str.to_string()))?;
-
-    let source_code = fs::read_to_string(path)
-        .map_err(|e| CodeStatsError::IoError(format!("Failed to read {path_str}: {e}")))?;
-
-    let mut parser = create_parser(&language)?;
-    let code_stats = analyze_code(&mut parser, &source_code, &path_str, &language)?;
-
-    Ok(FileStats {
-        path: path.to_path_buf(),
-        language,
-        stats: code_stats,
-    })
+    let mut analyzer = CodeAnalyzer::new();
+    analyzer.analyze_file(path)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::CodeStatsError;
+    use crate::language::SupportedLanguage;
     use std::fs;
     use std::path::PathBuf;
     use tempfile::TempDir;
@@ -235,77 +147,6 @@ struct TestStruct {
 
         assert_eq!(result.total_files(), 2);
         assert_eq!(result.total_stats.function_count, 2);
-    }
-
-    #[test]
-    fn test_process_entry_skips_directories() {
-        let temp_dir = TempDir::new().unwrap();
-        let sub_dir = temp_dir.path().join("subdir");
-        fs::create_dir(&sub_dir).unwrap();
-
-        let mut stats = DirectoryStats::new();
-
-        // Try to process a directory entry
-        let walker = WalkDir::new(temp_dir.path());
-        for entry in walker.into_iter().flatten() {
-            if entry.path() == sub_dir {
-                let result = process_entry(&entry, &mut stats, &[]);
-                assert!(result.is_ok());
-                break;
-            }
-        }
-
-        assert_eq!(stats.total_files(), 0);
-    }
-
-    #[test]
-    fn test_process_entry_handles_read_errors() {
-        let temp_dir = TempDir::new().unwrap();
-        let file_path = create_test_file(temp_dir.path(), "test.rs", "fn test() {}");
-
-        // Make file unreadable on Unix
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            let mut perms = fs::metadata(&file_path).unwrap().permissions();
-            perms.set_mode(0o000);
-            fs::set_permissions(&file_path, perms).unwrap();
-        }
-
-        let mut stats = DirectoryStats::new();
-
-        let walker = WalkDir::new(temp_dir.path());
-        for entry in walker.into_iter().flatten() {
-            if entry.path() == file_path {
-                let result = process_entry(&entry, &mut stats, &[]);
-
-                #[cfg(unix)]
-                {
-                    assert!(result.is_err());
-                    match result.unwrap_err() {
-                        CodeStatsError::IoError(msg) => assert!(msg.contains("Failed to read")),
-                        _ => panic!("Expected IoError"),
-                    }
-                }
-
-                #[cfg(not(unix))]
-                {
-                    // On non-Unix systems, just verify the function doesn't panic
-                    let _ = result;
-                }
-
-                break;
-            }
-        }
-
-        // Restore permissions for cleanup
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            let mut perms = fs::metadata(&file_path).unwrap().permissions();
-            perms.set_mode(0o644);
-            fs::set_permissions(&file_path, perms).unwrap();
-        }
     }
 
     #[test]
