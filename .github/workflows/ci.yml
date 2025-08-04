@@ -20,7 +20,7 @@ jobs:
       working-directory: code-stats-rs
     
     - name: Clippy
-      run: cargo clippy -- -D warnings
+      run: cargo clippy --all-targets --all-features -- -D warnings
       working-directory: code-stats-rs
     
     - name: Test

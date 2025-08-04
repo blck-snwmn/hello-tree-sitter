@@ -17,7 +17,7 @@ cd code-stats-rs/
 ### Code Quality
 - `cargo check` - Fast syntax and type checking
 - `cargo fmt` - Format code according to Rust standards
-- `cargo clippy` - Run Rust linter (if available)
+- `cargo clippy --all-targets --all-features` - Run Rust linter on all targets with all features
 
 ### Testing
 - `cargo test` - Run all integration tests

@@ -38,7 +38,7 @@ When completing any coding task in this project, follow these steps:
 
 5. **Lint (if available)**
    ```bash
-   cargo clippy
+   cargo clippy --all-targets --all-features
    ```
 
 ## Before Committing
