@@ -1,7 +1,7 @@
-mod helpers;
+mod common;
 
 use assert_cmd::Command;
-use helpers::{create_test_file, create_test_project};
+use common::{create_test_file, create_test_project};
 use predicates::prelude::*;
 
 #[test]

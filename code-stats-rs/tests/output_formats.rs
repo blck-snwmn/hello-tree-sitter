@@ -1,6 +1,6 @@
-mod helpers;
+mod common;
 
-use helpers::{
+use common::{
     assert_contains_all, create_controlled_test_project, parse_json_output, run_code_stats,
 };
 
@@ -179,7 +179,7 @@ fn test_format_case_insensitive() {
 fn test_single_file_analysis_format() {
     let temp_dir = tempfile::TempDir::new().unwrap();
     let test_file = temp_dir.path().join("single.rs");
-    helpers::create_test_file(
+    common::create_test_file(
         &test_file,
         r#"
 fn test_function() {}
@@ -214,7 +214,7 @@ fn test_format_with_special_characters_in_path() {
     let special_dir = temp_dir.path().join("special chars & spaces");
     std::fs::create_dir(&special_dir).unwrap();
 
-    helpers::create_test_file(&special_dir.join("file with spaces.rs"), "fn test() {}");
+    common::create_test_file(&special_dir.join("file with spaces.rs"), "fn test() {}");
 
     let output = run_code_stats(&[special_dir.to_str().unwrap(), "--format", "json"]);
     let stdout = String::from_utf8_lossy(&output.stdout);

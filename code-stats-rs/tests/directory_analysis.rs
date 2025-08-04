@@ -1,6 +1,6 @@
-mod helpers;
+mod common;
 
-use helpers::{
+use common::{
     assert_contains_all, create_controlled_test_project, create_symlink, create_test_file,
     create_test_project, run_code_stats,
 };
