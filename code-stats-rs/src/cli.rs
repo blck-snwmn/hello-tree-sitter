@@ -29,6 +29,53 @@ pub struct Cli {
     pub max_depth: usize,
 }
 
+impl Cli {
+    /// Run the code analysis based on CLI arguments
+    pub fn run(self) -> crate::error::Result<()> {
+        use crate::analyzer::CodeAnalyzer;
+        use crate::formatter::{format_output, format_single_file};
+
+        let mut analyzer = CodeAnalyzer::new();
+
+        if self.path.is_file() {
+            // Single file analysis
+            match analyzer.analyze_file(&self.path) {
+                Ok(file_stats) => {
+                    println!("{}", format_single_file(&file_stats));
+                    Ok(())
+                }
+                Err(e) => Err(e),
+            }
+        } else if self.path.is_dir() {
+            // Directory analysis
+            match analyzer.analyze_directory(
+                &self.path,
+                self.max_depth,
+                self.follow_links,
+                &self.ignore,
+            ) {
+                Ok(stats) => {
+                    // Determine output format
+                    let format = if self.detail && self.format == OutputFormat::Summary {
+                        OutputFormat::Detail
+                    } else {
+                        self.format
+                    };
+
+                    println!("{}", format_output(&stats, format, self.detail));
+                    Ok(())
+                }
+                Err(e) => Err(e),
+            }
+        } else {
+            Err(crate::error::CodeStatsError::IoError(format!(
+                "{} is neither a file nor a directory",
+                self.path.display()
+            )))
+        }
+    }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum OutputFormat {
     /// Summary statistics only
