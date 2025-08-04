@@ -338,4 +338,40 @@ fn actual_function() {
         assert_eq!(stats.function_count, 1);
         assert_eq!(stats.class_struct_count, 0);
     }
+
+    #[test]
+    fn test_analyze_code_go_only_counts_struct_types_not_interfaces_or_aliases() {
+        let mut parser = create_parser(&SupportedLanguage::Go).unwrap();
+        let source = r#"
+package main
+
+// Interface type
+type Writer interface {
+    Write([]byte) (int, error)
+}
+
+// Type alias
+type StringAlias = string
+
+// Named type (not a struct)
+type Counter int
+
+// Method on named type
+func (c Counter) Increment() Counter {
+    return c + 1
+}
+
+// Type spec with struct (this should be counted)
+type Person struct {
+    Name string
+    Age  int
+}
+"#;
+        
+        let stats = analyze_code(&mut parser, source, "test.go", &SupportedLanguage::Go).unwrap();
+        // Only the Person struct should be counted
+        assert_eq!(stats.class_struct_count, 1);
+        // Functions: Increment method
+        assert_eq!(stats.function_count, 1);
+    }
 }

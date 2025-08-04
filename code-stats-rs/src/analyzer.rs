@@ -137,3 +137,101 @@ impl Default for CodeAnalyzer {
         Self::new()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    #[test]
+    fn test_analyze_file_rejects_directory_path_with_error() {
+        let mut analyzer = CodeAnalyzer::new();
+        let temp_dir = TempDir::new().unwrap();
+        
+        let result = analyzer.analyze_file(temp_dir.path());
+        assert!(matches!(
+            result,
+            Err(CodeStatsError::IoError(msg)) if msg.contains("is not a file")
+        ));
+    }
+
+    #[test]
+    fn test_analyze_file_returns_error_for_unsupported_file_types() {
+        let mut analyzer = CodeAnalyzer::new();
+        let temp_dir = TempDir::new().unwrap();
+        let txt_file = temp_dir.path().join("test.txt");
+        std::fs::write(&txt_file, "content").unwrap();
+        
+        let result = analyzer.analyze_file(&txt_file);
+        assert!(matches!(result, Err(CodeStatsError::UnsupportedFileType(_))));
+    }
+
+    #[test]
+    fn test_default_trait_creates_empty_analyzer() {
+        let analyzer = CodeAnalyzer::default();
+        assert_eq!(analyzer.parsers.len(), 0);
+    }
+
+    #[test]
+    fn test_parser_cache_reuses_parser_for_same_language() {
+        let mut analyzer = CodeAnalyzer::new();
+        let temp_dir = TempDir::new().unwrap();
+        
+        // Rustファイルを2回解析してキャッシュを確認
+        let rs_file = temp_dir.path().join("test.rs");
+        std::fs::write(&rs_file, "fn main() {}").unwrap();
+        
+        analyzer.analyze_file(&rs_file).unwrap();
+        assert_eq!(analyzer.parsers.len(), 1);
+        assert!(analyzer.parsers.contains_key(&SupportedLanguage::Rust));
+        
+        // 2回目も成功し、パーサー数は増えない
+        analyzer.analyze_file(&rs_file).unwrap();
+        assert_eq!(analyzer.parsers.len(), 1);
+    }
+
+    #[test]
+    fn test_analyze_file_returns_io_error_for_nonexistent_file() {
+        let mut analyzer = CodeAnalyzer::new();
+        let non_existent = Path::new("/non/existent/file.rs");
+        
+        let result = analyzer.analyze_file(non_existent);
+        assert!(matches!(
+            result,
+            Err(CodeStatsError::IoError(msg)) if !msg.is_empty()
+        ));
+    }
+
+    #[test]
+    fn test_analyze_directory_succeeds_with_zero_files_when_all_unsupported() {
+        let mut analyzer = CodeAnalyzer::new();
+        let temp_dir = TempDir::new().unwrap();
+        
+        // サポートされていないファイルのみ作成
+        std::fs::write(temp_dir.path().join("file1.txt"), "text").unwrap();
+        std::fs::write(temp_dir.path().join("file2.md"), "markdown").unwrap();
+        
+        let result = analyzer.analyze_directory(temp_dir.path(), 100, false, &[]);
+        assert!(result.is_ok());
+        let stats = result.unwrap();
+        assert_eq!(stats.total_files(), 0);
+        assert_eq!(stats.total_stats.function_count, 0);
+    }
+
+    #[test]
+    fn test_analyze_directory_excludes_files_matching_ignore_patterns() {
+        let mut analyzer = CodeAnalyzer::new();
+        let temp_dir = TempDir::new().unwrap();
+        
+        // ファイルを作成
+        std::fs::write(temp_dir.path().join("main.rs"), "fn main() {}").unwrap();
+        std::fs::write(temp_dir.path().join("test.rs"), "fn test() {}").unwrap();
+        
+        // "test"を含むファイルを無視
+        let result = analyzer.analyze_directory(temp_dir.path(), 100, false, &["test".to_string()]);
+        assert!(result.is_ok());
+        let stats = result.unwrap();
+        assert_eq!(stats.total_files(), 1);
+        assert_eq!(stats.total_stats.function_count, 1);
+    }
+}
