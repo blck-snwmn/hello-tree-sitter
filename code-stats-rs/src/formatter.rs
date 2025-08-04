@@ -1,7 +1,11 @@
 use crate::cli::OutputFormat;
 use crate::stats::{DirectoryStats, FileStats};
 
-pub fn format_output(stats: &DirectoryStats, format: OutputFormat, _show_detail: bool) -> String {
+pub(crate) fn format_output(
+    stats: &DirectoryStats,
+    format: OutputFormat,
+    _show_detail: bool,
+) -> String {
     match format {
         OutputFormat::Summary => format_summary(stats),
         OutputFormat::Detail => format_detail(stats),
@@ -9,7 +13,7 @@ pub fn format_output(stats: &DirectoryStats, format: OutputFormat, _show_detail:
     }
 }
 
-pub fn format_single_file(file_stats: &FileStats) -> String {
+pub(crate) fn format_single_file(file_stats: &FileStats) -> String {
     format!(
         "Analyzing file: {} (Language: {:?})\n\
          Code Statistics:\n\

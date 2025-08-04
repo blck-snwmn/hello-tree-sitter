@@ -1,12 +1,9 @@
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-pub enum CodeStatsError {
+pub(crate) enum CodeStatsError {
     #[error("Failed to parse file: {0}")]
     ParseError(String),
-
-    #[error("Unsupported language for file: {0}")]
-    UnsupportedLanguage(String),
 
     #[error("Failed to set language grammar")]
     LanguageSetupError,
@@ -18,7 +15,7 @@ pub enum CodeStatsError {
     IoError(String),
 }
 
-pub type Result<T> = std::result::Result<T, CodeStatsError>;
+pub(crate) type Result<T> = std::result::Result<T, CodeStatsError>;
 
 #[cfg(test)]
 mod tests {
@@ -28,9 +25,6 @@ mod tests {
     fn test_error_display() {
         let err = CodeStatsError::ParseError("test.rs".to_string());
         assert_eq!(err.to_string(), "Failed to parse file: test.rs");
-
-        let err = CodeStatsError::UnsupportedLanguage("test.txt".to_string());
-        assert_eq!(err.to_string(), "Unsupported language for file: test.txt");
 
         let err = CodeStatsError::LanguageSetupError;
         assert_eq!(err.to_string(), "Failed to set language grammar");
@@ -76,7 +70,6 @@ mod tests {
         // Test that all error variants can be created and pattern matched
         let errors = vec![
             CodeStatsError::ParseError("file.rs".to_string()),
-            CodeStatsError::UnsupportedLanguage("file.xyz".to_string()),
             CodeStatsError::LanguageSetupError,
             CodeStatsError::UnsupportedFileType("file.doc".to_string()),
             CodeStatsError::IoError("Permission denied".to_string()),
@@ -85,9 +78,6 @@ mod tests {
         for error in errors {
             match error {
                 CodeStatsError::ParseError(file) => {
-                    assert!(!file.is_empty());
-                }
-                CodeStatsError::UnsupportedLanguage(file) => {
                     assert!(!file.is_empty());
                 }
                 CodeStatsError::LanguageSetupError => {}

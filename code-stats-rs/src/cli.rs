@@ -31,7 +31,7 @@ pub struct Cli {
 
 impl Cli {
     /// Run the code analysis based on CLI arguments
-    pub fn run(self) -> crate::error::Result<()> {
+    pub fn run(self) -> Result<(), String> {
         use crate::analyzer::CodeAnalyzer;
         use crate::formatter::{format_output, format_single_file};
 
@@ -44,7 +44,7 @@ impl Cli {
                     println!("{}", format_single_file(&file_stats));
                     Ok(())
                 }
-                Err(e) => Err(e),
+                Err(e) => Err(e.to_string()),
             }
         } else if self.path.is_dir() {
             // Directory analysis
@@ -65,13 +65,13 @@ impl Cli {
                     println!("{}", format_output(&stats, format, self.detail));
                     Ok(())
                 }
-                Err(e) => Err(e),
+                Err(e) => Err(e.to_string()),
             }
         } else {
-            Err(crate::error::CodeStatsError::IoError(format!(
+            Err(format!(
                 "{} is neither a file nor a directory",
                 self.path.display()
-            )))
+            ))
         }
     }
 }

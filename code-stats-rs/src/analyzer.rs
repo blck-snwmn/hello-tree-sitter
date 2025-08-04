@@ -8,18 +8,18 @@ use std::path::Path;
 use tree_sitter::Parser;
 use walkdir::{DirEntry, WalkDir};
 
-pub struct CodeAnalyzer {
+pub(crate) struct CodeAnalyzer {
     parsers: HashMap<SupportedLanguage, Parser>,
 }
 
 impl CodeAnalyzer {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self {
             parsers: HashMap::new(),
         }
     }
 
-    pub fn analyze_file(&mut self, path: &Path) -> Result<FileStats> {
+    pub(crate) fn analyze_file(&mut self, path: &Path) -> Result<FileStats> {
         if !path.is_file() {
             return Err(CodeStatsError::IoError(format!(
                 "{} is not a file",
@@ -44,7 +44,7 @@ impl CodeAnalyzer {
         })
     }
 
-    pub fn analyze_directory(
+    pub(crate) fn analyze_directory(
         &mut self,
         path: &Path,
         max_depth: usize,

@@ -5,32 +5,32 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FileStats {
+pub(crate) struct FileStats {
     pub path: PathBuf,
     pub language: SupportedLanguage,
     pub stats: CodeStats,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-pub struct DirectoryStats {
+pub(crate) struct DirectoryStats {
     pub files: Vec<FileStats>,
     pub total_by_language: HashMap<SupportedLanguage, LanguageStats>,
     pub total_stats: CodeStats,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub struct LanguageStats {
+pub(crate) struct LanguageStats {
     pub file_count: usize,
     pub function_count: usize,
     pub class_struct_count: usize,
 }
 
 impl DirectoryStats {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self::default()
     }
 
-    pub fn add_file(&mut self, file_stats: FileStats) {
+    pub(crate) fn add_file(&mut self, file_stats: FileStats) {
         // Update total stats
         self.total_stats.function_count += file_stats.stats.function_count;
         self.total_stats.class_struct_count += file_stats.stats.class_struct_count;
@@ -49,7 +49,7 @@ impl DirectoryStats {
         self.files.push(file_stats);
     }
 
-    pub fn total_files(&self) -> usize {
+    pub(crate) fn total_files(&self) -> usize {
         self.files.len()
     }
 }

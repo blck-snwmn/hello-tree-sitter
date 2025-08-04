@@ -3,7 +3,7 @@ use crate::language::SupportedLanguage;
 use tree_sitter::{Node, Parser};
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct CodeStats {
+pub(crate) struct CodeStats {
     pub function_count: usize,
     pub class_struct_count: usize,
 }
@@ -14,7 +14,7 @@ impl CodeStats {
     }
 }
 
-pub fn create_parser(language: &SupportedLanguage) -> Result<Parser> {
+pub(crate) fn create_parser(language: &SupportedLanguage) -> Result<Parser> {
     let mut parser = Parser::new();
     parser
         .set_language(&language.get_language())
@@ -22,7 +22,7 @@ pub fn create_parser(language: &SupportedLanguage) -> Result<Parser> {
     Ok(parser)
 }
 
-pub fn analyze_code(
+pub(crate) fn analyze_code(
     parser: &mut Parser,
     source_code: &str,
     file_path: &str,
