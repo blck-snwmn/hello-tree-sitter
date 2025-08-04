@@ -1,35 +1,84 @@
+//! Data structures for collecting and aggregating code statistics.
+
 use crate::language::SupportedLanguage;
 use crate::parser::CodeStats;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+/// Statistics for a single source code file.
+///
+/// This structure holds the analysis results for an individual file, including
+/// its path, detected programming language, and the computed code statistics
+/// (function and class/struct counts).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct FileStats {
+    /// The path to the analyzed source file
     pub path: PathBuf,
+    /// The detected programming language of the file
     pub language: SupportedLanguage,
+    /// The computed code statistics for this file
     pub stats: CodeStats,
 }
 
+/// Aggregated statistics for a directory containing multiple source files.
+///
+/// This structure accumulates code statistics across multiple files within a directory,
+/// providing both individual file statistics and aggregated totals organized by
+/// programming language.
+///
+/// # Fields
+///
+/// - `files`: Individual statistics for each analyzed file
+/// - `total_by_language`: Aggregated statistics grouped by programming language
+/// - `total_stats`: Overall totals across all files and languages
+///
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub(crate) struct DirectoryStats {
+    /// Individual statistics for each analyzed file
     pub files: Vec<FileStats>,
+    /// Statistics aggregated by programming language
     pub total_by_language: HashMap<SupportedLanguage, LanguageStats>,
+    /// Overall totals across all files and languages
     pub total_stats: CodeStats,
 }
 
+/// Statistics aggregated for a specific programming language.
+///
+/// This structure holds the accumulated statistics for all files of a particular
+/// programming language within a directory analysis.
+///
+/// # Fields
+///
+/// - `file_count`: Number of files analyzed for this language
+/// - `function_count`: Total number of functions found across all files
+/// - `class_struct_count`: Total number of classes/structs found across all files
+///
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub(crate) struct LanguageStats {
+    /// Number of files analyzed for this programming language
     pub file_count: usize,
+    /// Total number of functions found across all files of this language
     pub function_count: usize,
+    /// Total number of classes/structs found across all files of this language
     pub class_struct_count: usize,
 }
 
 impl DirectoryStats {
+    /// Creates a new empty `DirectoryStats` instance.
     pub(crate) fn new() -> Self {
         Self::default()
     }
 
+    /// Adds a file's statistics to the directory aggregation.
+    ///
+    /// This method updates both the overall totals and the language-specific
+    /// statistics. It increments file counts, function counts, and class/struct
+    /// counts appropriately.
+    ///
+    /// # Parameters
+    ///
+    /// * `file_stats` - The statistics for the file to be added to the aggregation
     pub(crate) fn add_file(&mut self, file_stats: FileStats) {
         // Update total stats
         self.total_stats.function_count += file_stats.stats.function_count;
@@ -49,6 +98,7 @@ impl DirectoryStats {
         self.files.push(file_stats);
     }
 
+    /// Returns the total number of files that have been analyzed.
     pub(crate) fn total_files(&self) -> usize {
         self.files.len()
     }

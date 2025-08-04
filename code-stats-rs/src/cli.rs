@@ -1,6 +1,11 @@
+//! Command-line interface definitions and argument handling.
+
 use clap::{Parser, ValueEnum};
 use std::path::PathBuf;
 
+/// Command-line arguments for the code statistics analyzer.
+///
+/// This struct defines all available command-line options and their behavior.
 #[derive(Parser, Debug)]
 #[command(name = "code-stats-rs")]
 #[command(about = "Analyze code statistics for functions and classes", long_about = None)]
@@ -30,7 +35,25 @@ pub struct Cli {
 }
 
 impl Cli {
-    /// Run the code analysis based on CLI arguments
+    /// Executes the code analysis based on CLI arguments.
+    ///
+    /// This method implements the main execution flow:
+    /// 1. Creates a new analyzer instance
+    /// 2. Determines whether the path is a file or directory
+    /// 3. Runs the appropriate analysis
+    /// 4. Formats and displays the results based on the selected output format
+    ///
+    /// # Output Format Logic
+    ///
+    /// The output format is determined by a combination of `--format` and `--detail` flags:
+    /// - If `--detail` is specified with the default Summary format, it automatically
+    ///   switches to Detail format for backward compatibility
+    /// - Otherwise, the explicitly specified format is used
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(())` if analysis completes successfully
+    /// * `Err(String)` with error message if analysis fails
     pub fn run(self) -> Result<(), String> {
         use crate::analyzer::CodeAnalyzer;
         use crate::formatter::{format_output, format_single_file};
@@ -55,10 +78,13 @@ impl Cli {
                 &self.ignore,
             ) {
                 Ok(stats) => {
-                    // Determine output format
+                    // Determine output format based on --detail flag compatibility
                     let format = if self.detail && self.format == OutputFormat::Summary {
+                        // When --detail is used with default Summary format,
+                        // switch to Detail format for backward compatibility
                         OutputFormat::Detail
                     } else {
+                        // Use the explicitly specified format
                         self.format
                     };
 
@@ -76,6 +102,10 @@ impl Cli {
     }
 }
 
+/// Available output formats for the analysis results.
+///
+/// Each format provides a different level of detail and structure
+/// for the code statistics output.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum OutputFormat {
     /// Summary statistics only

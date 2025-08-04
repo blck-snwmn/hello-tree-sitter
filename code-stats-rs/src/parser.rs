@@ -1,19 +1,38 @@
+//! Tree-sitter based code parser for extracting function and class statistics.
+
 use crate::error::{CodeStatsError, Result};
 use crate::language::SupportedLanguage;
 use tree_sitter::{Node, Parser};
 
+/// Statistics about code structure.
+///
+/// Holds counts of functions and class/struct definitions found in source code.
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub(crate) struct CodeStats {
+    /// Number of function declarations found in the source code.
+    /// Includes regular functions, methods, constructors, and arrow functions.
     pub function_count: usize,
+    /// Number of class or struct declarations found in the source code.
+    /// Includes classes, structs, enums, and interfaces depending on the language.
     pub class_struct_count: usize,
 }
 
 impl CodeStats {
+    /// Creates a new `CodeStats` instance with zero counts.
     pub fn new() -> Self {
         Self::default()
     }
 }
 
+/// Creates a new tree-sitter parser configured for the specified language.
+///
+/// # Arguments
+///
+/// * `language` - The programming language to configure the parser for
+///
+/// # Returns
+///
+/// A configured `Parser` instance or an error if language setup fails.
 pub(crate) fn create_parser(language: &SupportedLanguage) -> Result<Parser> {
     let mut parser = Parser::new();
     parser
@@ -22,6 +41,21 @@ pub(crate) fn create_parser(language: &SupportedLanguage) -> Result<Parser> {
     Ok(parser)
 }
 
+/// Analyzes source code to extract code statistics.
+///
+/// Parses the provided source code using tree-sitter and counts
+/// function and class/struct declarations based on the language's AST node types.
+///
+/// # Arguments
+///
+/// * `parser` - A mutable reference to the tree-sitter parser
+/// * `source_code` - The source code to analyze
+/// * `file_path` - The path to the file being analyzed (used for error reporting)
+/// * `language` - The programming language of the source code
+///
+/// # Returns
+///
+/// A `CodeStats` instance containing the counts or an error if parsing fails.
 pub(crate) fn analyze_code(
     parser: &mut Parser,
     source_code: &str,
@@ -40,6 +74,10 @@ pub(crate) fn analyze_code(
     Ok(stats)
 }
 
+/// Recursively traverses the AST and counts function and class/struct nodes.
+///
+/// Uses depth-first traversal to examine each node and determine if it represents
+/// a function or class/struct declaration based on language-specific node types.
 fn count_nodes(node: &Node, stats: &mut CodeStats, language: &SupportedLanguage) {
     let node_kind = node.kind();
 
@@ -53,7 +91,10 @@ fn count_nodes(node: &Node, stats: &mut CodeStats, language: &SupportedLanguage)
             match node_kind {
                 "function_declaration" | "method_declaration" => stats.function_count += 1,
                 "type_spec" => {
-                    // Check if it's a struct type
+                    // Go uses type_spec for type declarations, but we only want to count structs.
+                    // A type_spec node has a "type" field that contains the actual type definition.
+                    // We need to check if this type is specifically a struct_type, not an interface,
+                    // type alias, or other type declaration.
                     if let Some(type_node) = node.child_by_field_name("type") {
                         if type_node.kind() == "struct_type" {
                             stats.class_struct_count += 1;
@@ -85,7 +126,11 @@ fn count_nodes(node: &Node, stats: &mut CodeStats, language: &SupportedLanguage)
         },
     }
 
-    // Recursively traverse child nodes
+    // Recursively traverse all child nodes to find nested declarations.
+    // This ensures we count all functions and classes, including:
+    // - Nested functions (e.g., closures, inner functions)
+    // - Nested classes
+    // - Methods within classes
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
         count_nodes(&child, stats, language);
@@ -367,7 +412,7 @@ type Person struct {
     Age  int
 }
 "#;
-        
+
         let stats = analyze_code(&mut parser, source, "test.go", &SupportedLanguage::Go).unwrap();
         // Only the Person struct should be counted
         assert_eq!(stats.class_struct_count, 1);

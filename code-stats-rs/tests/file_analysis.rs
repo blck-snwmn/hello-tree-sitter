@@ -140,7 +140,7 @@ fn test_file_with_unicode() {
     std::fs::write(
         &unicode_file,
         r#"
-// 日本語のコメント
+// Japanese comment
 fn こんにちは() {
     println!("Hello, 世界!");
 }

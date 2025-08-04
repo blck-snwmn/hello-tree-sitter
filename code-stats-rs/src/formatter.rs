@@ -1,6 +1,22 @@
+//! Output formatting for code statistics in Summary, Detail, and JSON formats.
+
 use crate::cli::OutputFormat;
 use crate::stats::{DirectoryStats, FileStats};
 
+/// Formats directory statistics according to the specified output format.
+///
+/// This is the main entry point for formatting directory-wide analysis results.
+/// It dispatches to the appropriate formatting function based on the requested format.
+///
+/// # Arguments
+///
+/// * `stats` - Directory statistics containing aggregated results from all analyzed files
+/// * `format` - The desired output format (Summary, Detail, or JSON)
+/// * `_show_detail` - Currently unused parameter (reserved for future functionality)
+///
+/// # Returns
+///
+/// A formatted string ready for display or further processing
 pub(crate) fn format_output(
     stats: &DirectoryStats,
     format: OutputFormat,
@@ -13,6 +29,18 @@ pub(crate) fn format_output(
     }
 }
 
+/// Formats statistics for a single file analysis.
+///
+/// This function is used when analyzing individual files rather than entire directories.
+/// It provides a clear, human-readable summary of the code statistics for the specific file.
+///
+/// # Arguments
+///
+/// * `file_stats` - Statistics for a single file including path, language, and counts
+///
+/// # Returns
+///
+/// A formatted string containing the file path, detected language, and code statistics
 pub(crate) fn format_single_file(file_stats: &FileStats) -> String {
     format!(
         "Analyzing file: {} (Language: {:?})\n\
@@ -26,14 +54,39 @@ pub(crate) fn format_single_file(file_stats: &FileStats) -> String {
     )
 }
 
+/// Formats directory statistics as a summary view.
+///
+/// Creates a concise overview showing aggregated statistics by programming language,
+/// followed by overall totals. Languages are sorted alphabetically for consistent output.
+///
+/// # Arguments
+///
+/// * `stats` - Directory statistics containing per-language aggregations
+///
+/// # Returns
+///
+/// A formatted string with language-wise summaries and grand totals
+///
+/// # Output Format
+///
+/// ```text
+/// Language Summary:
+///   Go:           15 functions,    3 structs/classes in 5 files
+///   Python:       8 functions,    2 structs/classes in 3 files
+///   Rust:         20 functions,   12 structs/classes in 8 files
+///
+/// Total: 43 functions, 17 structs/classes in 16 files
+/// ```
 fn format_summary(stats: &DirectoryStats) -> String {
     let mut output = String::new();
 
     output.push_str("Language Summary:\n");
 
+    // Sort languages alphabetically for consistent output ordering
     let mut languages: Vec<_> = stats.total_by_language.iter().collect();
     languages.sort_by_key(|(lang, _)| format!("{lang:?}"));
 
+    // Format each language's statistics with aligned columns
     for (language, lang_stats) in languages {
         output.push_str(&format!(
             "  {:12} {:4} functions, {:4} structs/classes in {} files\n",
@@ -44,6 +97,7 @@ fn format_summary(stats: &DirectoryStats) -> String {
         ));
     }
 
+    // Add grand totals at the end
     output.push_str(&format!(
         "\nTotal: {} functions, {} structs/classes in {} files",
         stats.total_stats.function_count,
@@ -54,13 +108,41 @@ fn format_summary(stats: &DirectoryStats) -> String {
     output
 }
 
+/// Formats directory statistics as a detailed view.
+///
+/// Provides comprehensive output showing individual file statistics followed by
+/// the summary view. Files are sorted by path for deterministic output ordering.
+///
+/// # Arguments
+///
+/// * `stats` - Directory statistics containing individual file results
+///
+/// # Returns
+///
+/// A formatted string with per-file details and summary statistics
+///
+/// # Output Format
+///
+/// ```text
+/// src/main.rs (Rust):
+///   Functions: 3
+///   Structs/Classes: 2
+///
+/// src/lib.rs (Rust):
+///   Functions: 5
+///   Structs/Classes: 1
+///
+/// Language Summary:
+/// [... summary content ...]
+/// ```
 fn format_detail(stats: &DirectoryStats) -> String {
     let mut output = String::new();
 
-    // Sort files by path for consistent output
+    // Sort files by path for consistent, deterministic output
     let mut files = stats.files.clone();
     files.sort_by(|a, b| a.path.cmp(&b.path));
 
+    // Display individual file statistics
     for file in &files {
         output.push_str(&format!(
             "{} ({:?}):\n  Functions: {}\n  Structs/Classes: {}\n\n",
@@ -71,11 +153,37 @@ fn format_detail(stats: &DirectoryStats) -> String {
         ));
     }
 
+    // Append summary statistics at the end
     output.push_str(&format_summary(stats));
 
     output
 }
 
+/// Formats directory statistics as JSON for machine consumption.
+///
+/// Serializes the complete directory statistics structure to pretty-printed JSON.
+/// This format is ideal for programmatic processing, integration with other tools,
+/// or storage for later analysis.
+///
+/// # Arguments
+///
+/// * `stats` - Directory statistics to serialize
+///
+/// # Returns
+///
+/// A JSON string with pretty formatting, or an error message if serialization fails
+///
+/// # JSON Structure
+///
+/// The output includes:
+/// - `files`: Array of individual file statistics
+/// - `total_by_language`: Language-aggregated statistics
+/// - `total_stats`: Overall totals across all languages
+///
+/// # Error Handling
+///
+/// If JSON serialization fails (highly unlikely with our data structures),
+/// returns a formatted error message instead of panicking.
 fn format_json(stats: &DirectoryStats) -> String {
     serde_json::to_string_pretty(stats)
         .unwrap_or_else(|e| format!("Error serializing to JSON: {e}"))
@@ -88,6 +196,10 @@ mod tests {
     use crate::parser::CodeStats;
     use std::path::PathBuf;
 
+    /// Creates a sample DirectoryStats for testing purposes.
+    ///
+    /// This helper function sets up realistic test data with multiple files
+    /// across different programming languages to verify formatting behavior.
     fn create_test_directory_stats() -> DirectoryStats {
         let mut stats = DirectoryStats::new();
 
@@ -121,6 +233,10 @@ mod tests {
         stats
     }
 
+    /// Tests single file formatting output.
+    ///
+    /// Verifies that format_single_file produces the expected content including
+    /// file path, language detection, and statistical counts.
     #[test]
     fn test_format_single_file() {
         let file_stats = FileStats {
@@ -140,6 +256,10 @@ mod tests {
         assert!(output.contains("Classes/Structs: 5"));
     }
 
+    /// Tests summary format output structure and content.
+    ///
+    /// Validates that format_summary correctly aggregates statistics by language,
+    /// sorts languages alphabetically, and includes accurate totals.
     #[test]
     fn test_format_summary() {
         let stats = create_test_directory_stats();
@@ -164,6 +284,10 @@ mod tests {
         assert!(output.contains("Total: 10 functions, 4 structs/classes in 3 files"));
     }
 
+    /// Tests detailed format output including individual files and summary.
+    ///
+    /// Ensures that format_detail displays each file's statistics separately
+    /// and includes the summary section at the end.
     #[test]
     fn test_format_detail() {
         let stats = create_test_directory_stats();
@@ -179,6 +303,10 @@ mod tests {
         assert!(output.contains("Total:"));
     }
 
+    /// Tests JSON format serialization and structure.
+    ///
+    /// Verifies that format_json produces valid JSON with the expected
+    /// structure and correct data values.
     #[test]
     fn test_format_json() {
         let stats = create_test_directory_stats();
@@ -201,6 +329,10 @@ mod tests {
         assert_eq!(parsed["total_stats"]["class_struct_count"], 4);
     }
 
+    /// Tests the main format_output function with all supported formats.
+    ///
+    /// Validates that the format dispatcher correctly routes to the appropriate
+    /// formatting function based on the OutputFormat parameter.
     #[test]
     fn test_format_output_with_different_formats() {
         let stats = create_test_directory_stats();
@@ -218,6 +350,10 @@ mod tests {
         assert!(json.contains("\"files\""));
     }
 
+    /// Tests formatting behavior with empty statistics.
+    ///
+    /// Ensures that all formatters handle the edge case of no analyzed files
+    /// gracefully, displaying appropriate zero values.
     #[test]
     fn test_format_empty_stats() {
         let stats = DirectoryStats::new();
@@ -233,6 +369,10 @@ mod tests {
         assert_eq!(parsed["files"].as_array().unwrap().len(), 0);
     }
 
+    /// Tests that languages are sorted alphabetically in summary output.
+    ///
+    /// Verifies the alphabetical ordering requirement by adding languages
+    /// in non-alphabetical order and checking their position in the output.
     #[test]
     fn test_format_language_sorting() {
         let mut stats = DirectoryStats::new();
