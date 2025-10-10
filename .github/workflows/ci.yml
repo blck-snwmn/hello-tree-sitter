@@ -14,7 +14,10 @@ jobs:
     
     - name: Setup Rust components
       run: rustup component add rustfmt clippy
-    
+
+    - name: Show Rust version
+      run: rustc --version && cargo --version && rustup show
+
     - name: Format check
       run: cargo fmt -- --check
       working-directory: code-stats-rs
