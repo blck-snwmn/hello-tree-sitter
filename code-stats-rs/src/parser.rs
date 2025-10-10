@@ -95,10 +95,10 @@ fn count_nodes(node: &Node, stats: &mut CodeStats, language: &SupportedLanguage)
                     // A type_spec node has a "type" field that contains the actual type definition.
                     // We need to check if this type is specifically a struct_type, not an interface,
                     // type alias, or other type declaration.
-                    if let Some(type_node) = node.child_by_field_name("type") {
-                        if type_node.kind() == "struct_type" {
-                            stats.class_struct_count += 1;
-                        }
+                    if let Some(type_node) = node.child_by_field_name("type")
+                        && type_node.kind() == "struct_type"
+                    {
+                        stats.class_struct_count += 1;
                     }
                 }
                 _ => {}
