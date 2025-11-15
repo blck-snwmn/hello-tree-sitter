@@ -45,7 +45,7 @@ impl CodeAnalyzer {
         }
 
         let path_str = path.to_string_lossy();
-        let language = SupportedLanguage::from_file_extension(&path_str)
+        let language = SupportedLanguage::from_file_path(&path_str)
             .ok_or_else(|| CodeStatsError::UnsupportedFileType(path_str.to_string()))?;
 
         let source_code = fs::read_to_string(path)
@@ -154,8 +154,8 @@ impl CodeAnalyzer {
             }
         }
 
-        // Check if it's a supported language based on file extension
-        let language = match SupportedLanguage::from_file_extension(&path_str) {
+        // Check if it's a supported language using AI-powered content detection
+        let language = match SupportedLanguage::from_file_path(&path_str) {
             Some(lang) => lang,
             None => return Ok(()), // Skip unsupported files silently
         };

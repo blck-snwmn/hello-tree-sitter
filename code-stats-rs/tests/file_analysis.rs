@@ -179,3 +179,81 @@ fn test_large_file() {
         .stdout(predicate::str::contains("Functions: 1000"))
         .stdout(predicate::str::contains("Classes/Structs: 0"));
 }
+
+#[test]
+fn test_python_script_without_extension() {
+    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let fixture = get_fixtures_path().join("python_script");
+
+    cmd.arg(fixture)
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Language: Python"))
+        .stdout(predicate::str::contains("Functions: 2"))
+        .stdout(predicate::str::contains("Classes/Structs: 1"));
+}
+
+#[test]
+fn test_python_code_with_txt_extension() {
+    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let fixture = get_fixtures_path().join("code.txt");
+
+    cmd.arg(fixture)
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Language: Python"))
+        .stdout(predicate::str::contains("Functions: 3"))
+        .stdout(predicate::str::contains("Classes/Structs: 1"));
+}
+
+#[test]
+fn test_jsx_file_detection() {
+    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let fixture = get_fixtures_path().join("component.jsx");
+
+    cmd.arg(fixture)
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Language: JavaScript"))
+        .stdout(predicate::str::contains("Functions: 3"))
+        .stdout(predicate::str::contains("Classes/Structs: 1"));
+}
+
+#[test]
+fn test_tsx_file_detection() {
+    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let fixture = get_fixtures_path().join("component.tsx");
+
+    cmd.arg(fixture)
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Language: TypeScript"))
+        .stdout(predicate::str::contains("Functions: 3"))
+        .stdout(predicate::str::contains("Classes/Structs: 1"));
+}
+
+#[test]
+fn test_mjs_file_detection() {
+    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let fixture = get_fixtures_path().join("module.mjs");
+
+    cmd.arg(fixture)
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Language: JavaScript"))
+        .stdout(predicate::str::contains("Functions: 4"))
+        .stdout(predicate::str::contains("Classes/Structs: 1"));
+}
+
+#[test]
+fn test_tiny_file_fallback_to_extension() {
+    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let fixture = get_fixtures_path().join("tiny.rs");
+
+    cmd.arg(fixture)
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Language: Rust"))
+        .stdout(predicate::str::contains("Functions: 1"))
+        .stdout(predicate::str::contains("Classes/Structs: 0"));
+}

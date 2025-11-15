@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+def hello():
+    print("Hello from Python")
+
+class Greeter:
+    pass
+
+def world():
+    return "World"

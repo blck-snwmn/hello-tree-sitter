@@ -16,18 +16,31 @@ This is a multi-language code statistics analyzer built with Rust and tree-sitte
 ### Dependencies (from Cargo.toml)
 - `tree-sitter = "0.24"` - Core incremental parsing library
 - `tree-sitter-rust = "0.23"` - Rust language grammar
-- `tree-sitter-go = "0.23"` - Go language grammar  
+- `tree-sitter-go = "0.23"` - Go language grammar
 - `tree-sitter-python = "0.23"` - Python language grammar
 - `tree-sitter-javascript = "0.23"` - JavaScript language grammar
 - `tree-sitter-typescript = "0.23"` - TypeScript language grammar
 - `tree-sitter-java = "0.23"` - Java language grammar
+- `magika = "1.0"` - Google's AI-powered file type detection
+- `ort = "2.0.0-rc.10"` - ONNX Runtime for Magika (with `download-binaries` feature)
 
 ### Architecture
 The application is structured around:
-- **SupportedLanguage enum**: Maps file extensions to tree-sitter languages
+- **AI-Powered File Detection**: Uses Google's Magika for content-based file type detection with extension-based fallback
+- **SupportedLanguage enum**: Maps detected file types to tree-sitter languages
 - **CodeStats struct**: Holds function and class/struct counts
 - **Recursive AST traversal**: Uses tree-sitter cursor for efficient node counting
 - **Language-specific patterns**: Each language has specific node types for functions and classes
+
+#### File Type Detection Strategy
+The analyzer employs a two-tier detection system:
+1. **Primary**: Magika AI-powered content analysis (~99% accuracy, ~5ms per file)
+2. **Fallback**: Extension-based detection for short files or when Magika is unavailable
+
+This approach provides:
+- Accurate detection of files with misleading or missing extensions
+- Support for extension variations (.jsx, .tsx, .mjs, etc.)
+- Robust handling of edge cases and minimal files
 
 ## Development Commands
 
