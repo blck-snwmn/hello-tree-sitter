@@ -292,11 +292,27 @@ mod tests {
         // Test that from_file_path works for all supported languages
         let test_cases = vec![
             ("test.rs", "fn main() {}", SupportedLanguage::Rust),
-            ("test.py", "def main():\n    pass", SupportedLanguage::Python),
-            ("test.js", "function main() {}", SupportedLanguage::JavaScript),
-            ("test.go", "package main\nfunc main() {}", SupportedLanguage::Go),
+            (
+                "test.py",
+                "def main():\n    pass",
+                SupportedLanguage::Python,
+            ),
+            (
+                "test.js",
+                "function main() {}",
+                SupportedLanguage::JavaScript,
+            ),
+            (
+                "test.go",
+                "package main\nfunc main() {}",
+                SupportedLanguage::Go,
+            ),
             ("test.java", "public class Test {}", SupportedLanguage::Java),
-            ("test.ts", "function main(): void {}", SupportedLanguage::TypeScript),
+            (
+                "test.ts",
+                "function main(): void {}",
+                SupportedLanguage::TypeScript,
+            ),
         ];
 
         for (filename, content, expected_lang) in test_cases {
