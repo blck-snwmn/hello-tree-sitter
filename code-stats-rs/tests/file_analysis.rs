@@ -8,7 +8,7 @@ fn get_fixtures_path() -> PathBuf {
 
 #[test]
 fn test_rust_file_analysis() {
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     let fixture = get_fixtures_path().join("test.rs");
 
     cmd.arg(fixture)
@@ -21,7 +21,7 @@ fn test_rust_file_analysis() {
 
 #[test]
 fn test_python_file_analysis() {
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     let fixture = get_fixtures_path().join("test.py");
 
     cmd.arg(fixture)
@@ -34,7 +34,7 @@ fn test_python_file_analysis() {
 
 #[test]
 fn test_go_file_analysis() {
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     let fixture = get_fixtures_path().join("test.go");
 
     cmd.arg(fixture)
@@ -47,7 +47,7 @@ fn test_go_file_analysis() {
 
 #[test]
 fn test_javascript_file_analysis() {
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     let fixture = get_fixtures_path().join("test.js");
 
     cmd.arg(fixture)
@@ -60,7 +60,7 @@ fn test_javascript_file_analysis() {
 
 #[test]
 fn test_typescript_file_analysis() {
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     let fixture = get_fixtures_path().join("test.ts");
 
     cmd.arg(fixture)
@@ -73,7 +73,7 @@ fn test_typescript_file_analysis() {
 
 #[test]
 fn test_java_file_analysis() {
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     let fixture = get_fixtures_path().join("test.java");
 
     cmd.arg(fixture)
@@ -90,7 +90,7 @@ fn test_unsupported_file_type() {
     let unsupported_file = temp_dir.path().join("unsupported.txt");
     std::fs::write(&unsupported_file, "This is not a code file").unwrap();
 
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg(unsupported_file)
         .assert()
         .failure()
@@ -99,7 +99,7 @@ fn test_unsupported_file_type() {
 
 #[test]
 fn test_missing_file() {
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg("tests/fixtures/nonexistent.rs")
         .assert()
         .failure()
@@ -112,7 +112,7 @@ fn test_empty_file() {
     let empty_file = temp_dir.path().join("empty.rs");
     std::fs::write(&empty_file, "").unwrap();
 
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg(empty_file)
         .assert()
         .success()
@@ -126,7 +126,7 @@ fn test_file_with_syntax_errors() {
     let invalid_file = temp_dir.path().join("invalid.rs");
     std::fs::write(&invalid_file, "fn test( { // syntax error").unwrap();
 
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg(invalid_file)
         .assert()
         .success() // Should still succeed even with syntax errors
@@ -152,7 +152,7 @@ struct 構造体 {
     )
     .unwrap();
 
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg(unicode_file)
         .assert()
         .success()
@@ -172,7 +172,7 @@ fn test_large_file() {
     }
     std::fs::write(&large_file, content).unwrap();
 
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg(large_file)
         .assert()
         .success()
@@ -182,7 +182,7 @@ fn test_large_file() {
 
 #[test]
 fn test_python_script_without_extension() {
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     let fixture = get_fixtures_path().join("python_script");
 
     cmd.arg(fixture)
@@ -195,7 +195,7 @@ fn test_python_script_without_extension() {
 
 #[test]
 fn test_python_code_with_txt_extension() {
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     let fixture = get_fixtures_path().join("code.txt");
 
     cmd.arg(fixture)
@@ -208,7 +208,7 @@ fn test_python_code_with_txt_extension() {
 
 #[test]
 fn test_jsx_file_detection() {
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     let fixture = get_fixtures_path().join("component.jsx");
 
     cmd.arg(fixture)
@@ -221,7 +221,7 @@ fn test_jsx_file_detection() {
 
 #[test]
 fn test_tsx_file_detection() {
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     let fixture = get_fixtures_path().join("component.tsx");
 
     cmd.arg(fixture)
@@ -234,7 +234,7 @@ fn test_tsx_file_detection() {
 
 #[test]
 fn test_mjs_file_detection() {
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     let fixture = get_fixtures_path().join("module.mjs");
 
     cmd.arg(fixture)
@@ -247,7 +247,7 @@ fn test_mjs_file_detection() {
 
 #[test]
 fn test_tiny_file_fallback_to_extension() {
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     let fixture = get_fixtures_path().join("tiny.rs");
 
     cmd.arg(fixture)

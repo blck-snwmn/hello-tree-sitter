@@ -6,7 +6,7 @@ use predicates::prelude::*;
 
 #[test]
 fn test_help_message() {
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg("--help")
         .assert()
         .success()
@@ -22,7 +22,7 @@ fn test_help_message() {
 
 #[test]
 fn test_version() {
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     // Version flag is not supported by default in clap v4
     cmd.arg("--version")
         .assert()
@@ -32,7 +32,7 @@ fn test_version() {
 
 #[test]
 fn test_missing_path_argument() {
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.assert()
         .failure()
         .stderr(predicate::str::contains("required arguments"));
@@ -42,7 +42,7 @@ fn test_missing_path_argument() {
 fn test_invalid_format_option() {
     let temp_dir = tempfile::TempDir::new().unwrap();
 
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg(temp_dir.path())
         .arg("--format")
         .arg("invalid")
@@ -55,7 +55,7 @@ fn test_invalid_format_option() {
 fn test_multiple_ignore_patterns() {
     let (_temp_dir, project_root) = create_test_project();
 
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg(project_root)
         .arg("--ignore")
         .arg(".git")
@@ -72,7 +72,7 @@ fn test_max_depth_validation() {
     let temp_dir = tempfile::TempDir::new().unwrap();
 
     // Valid max-depth
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg(temp_dir.path())
         .arg("--max-depth")
         .arg("5")
@@ -80,7 +80,7 @@ fn test_max_depth_validation() {
         .success();
 
     // Invalid max-depth (not a number)
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg(temp_dir.path())
         .arg("--max-depth")
         .arg("abc")
@@ -94,7 +94,7 @@ fn test_conflicting_format_options() {
     let temp_dir = tempfile::TempDir::new().unwrap();
 
     // --detail should override --format summary
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg(temp_dir.path())
         .arg("--format")
         .arg("summary")
@@ -111,7 +111,7 @@ fn test_path_with_spaces() {
 
     create_test_file(&dir_with_spaces.join("test.rs"), "fn test() {}");
 
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg(&dir_with_spaces)
         .assert()
         .success()
@@ -125,7 +125,7 @@ fn test_relative_path() {
     create_test_file(&test_file, "fn test() {}");
 
     // Change to temp directory and use relative path
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.current_dir(temp_dir.path())
         .arg("test.rs")
         .assert()
@@ -139,7 +139,7 @@ fn test_absolute_path() {
     let test_file = temp_dir.path().join("test.rs");
     create_test_file(&test_file, "fn test() {}");
 
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg(test_file.to_str().unwrap())
         .assert()
         .success()
@@ -148,7 +148,7 @@ fn test_absolute_path() {
 
 #[test]
 fn test_nonexistent_path() {
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg("/this/path/does/not/exist")
         .assert()
         .failure()
@@ -162,7 +162,7 @@ fn test_file_vs_directory_detection() {
     create_test_file(&test_file, "fn test() {}");
 
     // Test file - should show single file format
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg(&test_file)
         .assert()
         .success()
@@ -170,7 +170,7 @@ fn test_file_vs_directory_detection() {
         .stdout(predicate::str::contains("Code Statistics:"));
 
     // Test directory - should show summary format
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg(temp_dir.path())
         .assert()
         .success()
@@ -182,7 +182,7 @@ fn test_file_vs_directory_detection() {
 fn test_stdin_not_supported() {
     // Test that we properly handle when no path is provided
     // (stdin input is not supported)
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.assert()
         .failure()
         .stderr(predicate::str::contains("required"));
@@ -192,7 +192,7 @@ fn test_stdin_not_supported() {
 fn test_all_options_combined() {
     let (_temp_dir, project_root) = create_test_project();
 
-    let mut cmd = Command::cargo_bin("code-stats-rs").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_code-stats-rs"));
     cmd.arg(project_root)
         .arg("--format")
         .arg("json")
