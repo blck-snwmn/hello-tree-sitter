@@ -5,6 +5,3 @@ target/llvm-cov/
 lcov.info
 coverage/
 *.profraw
-
-# serena
-.serena/cache
